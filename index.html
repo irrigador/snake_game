@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+        }
+
+        canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Snake</h1>
+    <canvas id="board"></canvas>
+
+    <script>
+        var blockSize = 25;
+        var rows = Math.floor(window.innerHeight / blockSize);
+        var cols = Math.floor(window.innerWidth / blockSize);
+
+        var board;
+        var context;
+
+        var snakeX = blockSize * 5;
+        var snakeY = blockSize * 5;
+
+        var velocityX = 0;
+        var velocityY = 0;
+
+        var snakeBody = [];
+
+        var foodX;
+        var foodY;
+
+        var gameOver = false;
+
+        window.onload = function () {
+            board = document.getElementById("board");
+            board.height = rows * blockSize;
+            board.width = cols * blockSize;
+            context = board.getContext("2d");
+            placeFood();
+            board.addEventListener("mousemove", mouseControl);
+            setInterval(update, 1000 / 10);
+        }
+
+        function update() {
+            if (gameOver) {
+                return;
+            }
+
+            context.fillStyle = "black";
+            context.fillRect(0, 0, board.width, board.height);
+
+            context.fillStyle = "red";
+            context.fillRect(foodX, foodY, blockSize, blockSize);
+
+            if (snakeX == foodX && snakeY == foodY) {
+                snakeBody.push([foodX, foodY]);
+                placeFood();
+            }
+
+            for (let i = snakeBody.length - 1; i > 0; i--) {
+                snakeBody[i] = snakeBody[i - 1];
+            }
+
+            if (snakeBody.length) {
+                snakeBody[0] = [snakeX, snakeY];
+            }
+
+            context.fillStyle = "lime";
+            snakeX += velocityX * blockSize;
+            snakeY += velocityY * blockSize;
+            context.fillRect(snakeX, snakeY, blockSize, blockSize);
+            for (let i = 0; i < snakeBody.length; i++) {
+                context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
+            }
+
+            if (snakeX < 0 || snakeX > cols * blockSize - blockSize || snakeY < 0 || snakeY > rows * blockSize - blockSize) {
+                gameOver = true;
+                alert("Game Over");
+            }
+
+            for (let i = 1; i < snakeBody.length; i++) {
+                if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
+                    gameOver = true;
+                    alert("Game Over");
+                }
+            }
+        }
+
+        function mouseControl(event) {
+            var centerX = snakeX + blockSize / 2;
+            var centerY = snakeY + blockSize / 2;
+
+            var diffX = event.clientX - centerX;
+            var diffY = event.clientY - centerY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 0 && velocityX != -1) {
+                    velocityX = 1;
+                    velocityY = 0;
+                } else if (diffX < 0 && velocityX != 1) {
+                    velocityX = -1;
+                    velocityY = 0;
+                }
+            } else {
+                if (diffY > 0 && velocityY != -1) {
+                    velocityX = 0;
+                    velocityY = 1;
+                } else if (diffY < 0 && velocityY != 1) {
+                    velocityX = 0;
+                    velocityY = -1;
+                }
+            }
+        }
+
+        function placeFood() {
+            foodX = Math.floor(Math.random() * cols) * blockSize;
+            foodY = Math.floor(Math.random() * rows) * blockSize;
+        }
+    </script>
+</body>
+
+</html>
